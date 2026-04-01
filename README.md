@@ -1,2 +1,0 @@
-# Replix
-AI review 
