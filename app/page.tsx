@@ -4,7 +4,6 @@ import Hoot from '@/components/Hoot'
 export default function Home() {
   return (
     <main className="min-h-screen">
-      {/* Navigation */}
       <nav className="fixed top-0 left-0 right-0 bg-white/90 backdrop-blur-md border-b border-gray-200 z-50">
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2 text-xl font-bold text-gray-900">
@@ -22,7 +21,6 @@ export default function Home() {
         </div>
       </nav>
 
-      {/* Hero */}
       <section className="pt-32 pb-20 px-6">
         <div className="max-w-4xl mx-auto text-center">
           <div className="mb-8">
@@ -51,7 +49,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Stats */}
       <section className="py-16 bg-white border-y border-gray-200">
         <div className="max-w-6xl mx-auto px-6">
           <div className="grid grid-cols-3 gap-12 text-center">
@@ -71,7 +68,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Features */}
       <section id="funktioner" className="py-20 px-6">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
@@ -105,7 +101,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* How it works */}
       <section id="demo" className="py-20 px-6 bg-white border-y border-gray-200">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
@@ -127,14 +122,13 @@ export default function Home() {
             <div className="text-3xl text-gray-300 pt-4">→</div>
             <div className="text-center max-w-xs">
               <div className="w-14 h-14 bg-indigo-500 text-white rounded-full flex items-center justify-center text-xl font-semibold mx-auto mb-6">3</div>
-              <h3 className="text-lg font-semibold mb-3">Godkänn & publicera</h3>
+              <h3 className="text-lg font-semibold mb-3">Godkänn och publicera</h3>
               <p className="text-gray-600">Granska och publicera med ett klick.</p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Pricing */}
       <section id="priser" className="py-20 px-6">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
@@ -191,7 +185,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* CTA */}
       <section className="py-20 px-6 bg-gradient-to-b from-gray-50 to-indigo-100">
         <div className="max-w-4xl mx-auto text-center">
           <Hoot size="lg" className="mx-auto mb-6" />
@@ -203,7 +196,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Footer */}
       <footer className="py-12 px-6 bg-white border-t border-gray-200">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-2">
