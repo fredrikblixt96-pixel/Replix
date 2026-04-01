@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Replix — AI-drivna recensionssvar</title>
+  <meta name="description" content="Svara på Google-recensioner på sekunder med AI. Spara timmar varje vecka och missa aldrig en kund.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    :root {
+      --bg: #FAFAFA;
+      --bg-white: #FFFFFF;
+      --text: #171717;
+      --text-secondary: #525252;
+      --text-muted: #737373;
+      --border: #E5E5E5;
+      --primary: #6366F1;
+      --primary-dark: #4F46E5;
+      --primary-light: #E0E7FF;
+      --accent: #F59E0B;
+      --success: #10B981;
+      --star: #FBBF24;
+    }
+    
+    html { scroll-behavior: smooth; }
+    
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+    
+    .container { max-width: 1140px; margin: 0 auto; padding: 0 24px; }
+    
+    /* Mascot SVG */
+    .mascot {
+      display: inline-block;
+    }
+    .mascot-small { width: 40px; height: 40px; }
+    .mascot-medium { width: 80px; height: 80px; }
+    .mascot-large { width: 120px; height: 120px; }
+    .mascot-hero { width: 200px; height: 200px; }
+    
+    /* Navigation */
+    .nav {
+      position: fixed; top: 0; left: 0; right: 0;
+      background: rgba(255,255,255,0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      z-index: 100;
+    }
+    .nav-inner {
+      max-width: 1140px; margin: 0 auto; padding: 0 24px;
+      height: 64px; display: flex; align-items: center; justify-content: space-between;
+    }
+    .logo { 
+      display: flex; align-items: center; gap: 10px;
+      font-size: 22px; font-weight: 700; letter-spacing: -0.03em; color: var(--text); 
+    }
+    .logo svg { width: 36px; height: 36px; }
+    .nav-links { display: flex; align-items: center; gap: 32px; }
+    .nav-links a { font-size: 14px; color: var(--text-secondary); text-decoration: none; transition: color 0.15s; }
+    .nav-links a:hover { color: var(--text); }
+    
+    /* Buttons */
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center;
+      padding: 12px 24px; border-radius: 8px; font-size: 14px; font-weight: 500;
+      text-decoration: none; cursor: pointer; transition: all 0.15s; border: none;
+    }
+    .btn-primary { background: var(--primary); color: white !important; }
+    .btn-primary:hover { background: var(--primary-dark); transform: translateY(-1px); }
+    .btn-secondary { background: var(--bg-white); color: var(--text); border: 1px solid var(--border); }
+    .btn-secondary:hover { border-color: var(--text-muted); }
+    .btn-sm { padding: 8px 16px; font-size: 13px; }
+    .btn-lg { padding: 16px 32px; font-size: 15px; }
+    .btn-block { width: 100%; }
+    
+    /* Hero */
+    .hero { padding: 160px 0 100px; text-align: center; }
+    .hero-content { display: flex; flex-direction: column; align-items: center; }
+    .hero-mascot { margin-bottom: 32px; animation: float 3s ease-in-out infinite; }
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 8px 16px; background: var(--primary-light); color: var(--primary-dark);
+      border-radius: 100px; font-size: 13px; font-weight: 500; margin-bottom: 24px;
+    }
+    .hero h1 {
+      font-size: 56px; font-weight: 700; letter-spacing: -0.03em;
+      line-height: 1.1; margin-bottom: 24px;
+    }
+    .hero-subtitle {
+      font-size: 20px; color: var(--text-muted); max-width: 600px;
+      margin: 0 auto 40px; line-height: 1.6;
+    }
+    .hero-cta { display: flex; gap: 12px; justify-content: center; margin-bottom: 48px; }
+    .hero-trust { font-size: 14px; color: var(--text-muted); }
+    
+    /* Language Switcher */
+    .lang-switch {
+      position: fixed; bottom: 24px; right: 24px;
+      display: flex; gap: 4px; background: white;
+      padding: 4px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      z-index: 100;
+    }
+    .lang-btn {
+      padding: 8px 12px; border: none; background: transparent;
+      font-size: 13px; font-weight: 500; cursor: pointer; border-radius: 6px;
+      transition: all 0.15s;
+    }
+    .lang-btn.active { background: var(--primary); color: white; }
+    .lang-btn:not(.active):hover { background: var(--bg); }
+    
+    /* Stats */
+    .stats {
+      padding: 80px 0;
+      background: var(--bg-white);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+    .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 48px; text-align: center; }
+    .stat-value { font-size: 56px; font-weight: 700; letter-spacing: -0.03em; margin-bottom: 8px; color: var(--primary); }
+    .stat-label { font-size: 15px; color: var(--text-muted); }
+    
+    /* Section Header */
+    .section-header { text-align: center; margin-bottom: 64px; }
+    .section-header h2 { font-size: 40px; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 16px; }
+    .section-header p { font-size: 18px; color: var(--text-muted); }
+    
+    /* Features */
+    .features { padding: 120px 0; }
+    .features-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 32px; }
+    .feature {
+      padding: 40px; background: var(--bg-white);
+      border: 1px solid var(--border); border-radius: 16px;
+      transition: box-shadow 0.2s, transform 0.2s;
+    }
+    .feature:hover { box-shadow: 0 8px 30px rgba(0,0,0,0.06); transform: translateY(-2px); }
+    .feature-icon { font-size: 32px; margin-bottom: 20px; }
+    .feature h3 { font-size: 20px; font-weight: 600; margin-bottom: 12px; }
+    .feature p { color: var(--text-secondary); line-height: 1.7; }
+    
+    /* How it works */
+    .how-it-works {
+      padding: 120px 0;
+      background: var(--bg-white);
+      border-top: 1px solid var(--border);
+    }
+    .steps { display: flex; align-items: flex-start; justify-content: center; gap: 32px; }
+    .step { flex: 1; max-width: 300px; text-align: center; }
+    .step-number {
+      width: 56px; height: 56px; background: var(--primary); color: white;
+      border-radius: 50%; display: flex; align-items: center; justify-content: center;
+      font-size: 20px; font-weight: 600; margin: 0 auto 24px;
+    }
+    .step h3 { font-size: 18px; font-weight: 600; margin-bottom: 12px; }
+    .step p { font-size: 15px; color: var(--text-secondary); }
+    .step-arrow { font-size: 28px; color: var(--border); padding-top: 14px; }
+    
+    /* Testimonials */
+    .testimonials { padding: 120px 0; }
+    .testimonials-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 32px; }
+    .testimonial {
+      padding: 40px; background: var(--bg-white);
+      border: 1px solid var(--border); border-radius: 16px;
+    }
+    .testimonial-stars { color: var(--star); font-size: 20px; margin-bottom: 20px; letter-spacing: 2px; }
+    .testimonial blockquote {
+      font-size: 18px; line-height: 1.7; color: var(--text);
+      margin-bottom: 28px; font-style: normal;
+    }
+    .testimonial-author { display: flex; align-items: center; gap: 16px; }
+    .testimonial-avatar {
+      width: 52px; height: 52px; border-radius: 50%; background: var(--primary-light);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px; font-weight: 600; color: var(--primary-dark);
+    }
+    .testimonial-name { font-weight: 600; margin-bottom: 2px; }
+    .testimonial-role { font-size: 14px; color: var(--text-muted); }
+    
+    /* Pricing */
+    .pricing {
+      padding: 120px 0;
+      background: var(--bg-white);
+      border-top: 1px solid var(--border);
+    }
+    .pricing-toggle {
+      display: flex; justify-content: center; gap: 16px; margin-bottom: 48px;
+      align-items: center;
+    }
+    .pricing-toggle span { font-size: 14px; color: var(--text-secondary); }
+    .currency-switch {
+      display: flex; gap: 4px; background: var(--bg);
+      padding: 4px; border-radius: 8px;
+    }
+    .currency-btn {
+      padding: 8px 16px; border: none; background: transparent;
+      font-size: 13px; font-weight: 500; cursor: pointer; border-radius: 6px;
+    }
+    .currency-btn.active { background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+    .pricing-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+    .plan {
+      padding: 40px; background: var(--bg-white);
+      border: 1px solid var(--border); border-radius: 16px; position: relative;
+    }
+    .plan-popular { border: 2px solid var(--primary); }
+    .plan-badge {
+      position: absolute; top: -14px; left: 50%; transform: translateX(-50%);
+      background: var(--primary); color: white;
+      padding: 6px 20px; border-radius: 100px;
+      font-size: 13px; font-weight: 500;
+    }
+    .plan-name { font-size: 22px; font-weight: 600; margin-bottom: 8px; }
+    .plan-price { font-size: 48px; font-weight: 700; letter-spacing: -0.03em; margin-bottom: 8px; }
+    .plan-price span { font-size: 18px; font-weight: 400; color: var(--text-muted); }
+    .plan-desc { font-size: 15px; color: var(--text-muted); margin-bottom: 32px; }
+    .plan-features { margin-bottom: 32px; }
+    .plan-features li {
+      list-style: none; padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 15px; color: var(--text-secondary);
+    }
+    .plan-features li:last-child { border-bottom: none; }
+    
+    /* Final CTA */
+    .final-cta {
+      padding: 120px 0; text-align: center;
+      background: linear-gradient(180deg, var(--bg) 0%, var(--primary-light) 100%);
+    }
+    .final-cta h2 { font-size: 40px; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 16px; }
+    .final-cta p { font-size: 18px; color: var(--text-muted); margin-bottom: 40px; }
+    .final-cta .mascot { margin-bottom: 32px; }
+    
+    /* Footer */
+    .footer {
+      padding: 80px 0 48px;
+      background: var(--bg-white);
+      border-top: 1px solid var(--border);
+    }
+    .footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 64px; margin-bottom: 64px; }
+    .footer-brand { display: flex; flex-direction: column; gap: 16px; }
+    .footer-brand p { font-size: 14px; color: var(--text-muted); line-height: 1.6; }
+    .footer-links h4 {
+      font-size: 12px; font-weight: 600; text-transform: uppercase;
+      letter-spacing: 0.1em; color: var(--text-muted); margin-bottom: 20px;
+    }
+    .footer-links a {
+      display: block; font-size: 14px; color: var(--text-secondary);
+      text-decoration: none; padding: 8px 0; transition: color 0.15s;
+    }
+    .footer-links a:hover { color: var(--text); }
+    .footer-bottom { padding-top: 32px; border-top: 1px solid var(--border); text-align: center; }
+    .footer-bottom p { font-size: 14px; color: var(--text-muted); }
+    
+    /* Responsive */
+    @media (max-width: 900px) {
+      .hero h1 { font-size: 40px; }
+      .hero-subtitle { font-size: 18px; }
+      .hero-mascot svg { width: 150px; height: 150px; }
+      .stats-grid { grid-template-columns: 1fr; gap: 40px; }
+      .stat-value { font-size: 40px; }
+      .features-grid { grid-template-columns: 1fr; }
+      .steps { flex-direction: column; align-items: center; }
+      .step-arrow { transform: rotate(90deg); }
+      .testimonials-grid { grid-template-columns: 1fr; }
+      .pricing-grid { grid-template-columns: 1fr; }
+      .footer-grid { grid-template-columns: 1fr 1fr; gap: 40px; }
+      .footer-brand { grid-column: span 2; }
+      .nav-links a:not(.btn) { display: none; }
+    }
+    
+    @media (max-width: 600px) {
+      .hero { padding: 120px 0 80px; }
+      .hero h1 { font-size: 32px; }
+      .hero-cta { flex-direction: column; }
+      .section-header h2 { font-size: 28px; }
+      .feature { padding: 28px; }
+      .plan { padding: 28px; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Hoot Mascot SVG Template -->
+  <svg style="display: none;">
+    <symbol id="hoot-mascot" viewBox="0 0 120 130">
+      <!-- Body -->
+      <ellipse cx="60" cy="65" rx="45" ry="50" fill="#6366F1"/>
+      <!-- Belly -->
+      <ellipse cx="60" cy="75" rx="28" ry="32" fill="#E0E7FF"/>
+      <!-- Eyes - big owl eyes -->
+      <circle cx="42" cy="45" r="18" fill="white"/>
+      <circle cx="78" cy="45" r="18" fill="white"/>
+      <circle cx="44" cy="47" r="10" fill="#1F2937"/>
+      <circle cx="80" cy="47" r="10" fill="#1F2937"/>
+      <circle cx="47" cy="44" r="4" fill="white"/>
+      <circle cx="83" cy="44" r="4" fill="white"/>
+      <!-- Beak -->
+      <path d="M52 62 L60 75 L68 62 Z" fill="#F59E0B"/>
+      <!-- Ear tufts -->
+      <path d="M25 20 L32 35 L20 35 Z" fill="#6366F1"/>
+      <path d="M95 20 L88 35 L100 35 Z" fill="#6366F1"/>
+      <!-- Small wings -->
+      <ellipse cx="18" cy="70" rx="12" ry="20" fill="#4F46E5"/>
+      <ellipse cx="102" cy="70" rx="12" ry="20" fill="#4F46E5"/>
+    </symbol>
+    <symbol id="hoot-waving" viewBox="0 0 140 130">
+      <!-- Body -->
+      <ellipse cx="70" cy="65" rx="45" ry="50" fill="#6366F1"/>
+      <!-- Belly -->
+      <ellipse cx="70" cy="75" rx="28" ry="32" fill="#E0E7FF"/>
+      <!-- Eyes - big owl eyes -->
+      <circle cx="52" cy="45" r="18" fill="white"/>
+      <circle cx="88" cy="45" r="18" fill="white"/>
+      <circle cx="54" cy="47" r="10" fill="#1F2937"/>
+      <circle cx="90" cy="47" r="10" fill="#1F2937"/>
+      <circle cx="57" cy="44" r="4" fill="white"/>
+      <circle cx="93" cy="44" r="4" fill="white"/>
+      <!-- Beak -->
+      <path d="M62 62 L70 75 L78 62 Z" fill="#F59E0B"/>
+      <!-- Ear tufts -->
+      <path d="M35 20 L42 35 L30 35 Z" fill="#6366F1"/>
+      <path d="M105 20 L98 35 L110 35 Z" fill="#6366F1"/>
+      <!-- Left wing down -->
+      <ellipse cx="28" cy="70" rx="12" ry="20" fill="#4F46E5"/>
+      <!-- Right wing waving up -->
+      <ellipse cx="122" cy="45" rx="12" ry="20" fill="#4F46E5" transform="rotate(-30 122 45)"/>
+      <!-- Stars -->
+      <circle cx="135" cy="25" r="4" fill="#FCD34D"/>
+      <circle cx="125" cy="15" r="3" fill="#FCD34D"/>
+    </symbol>
+  </svg>
+
+  <!-- Navigation -->
+  <nav class="nav">
+    <div class="nav-inner">
+      <div class="logo">
+        <svg viewBox="0 0 120 130" width="36" height="36">
+          <use href="#hoot-mascot"/>
+        </svg>
+        Replix
+      </div>
+      <div class="nav-links">
+        <a href="#features">Funktioner</a>
+        <a href="#pricing">Priser</a>
+        <a href="/login">Logga in</a>
+        <a href="mailto:fredrik.blixt96@gmail.com?subject=Jag%20vill%20testa%20Replix" class="btn btn-primary btn-sm">Kom igång</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Endast svenska -->
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="container">
+      <div class="hero-content">
+        <div class="hero-mascot">
+          <svg viewBox="0 0 140 130" width="180" height="180">
+            <use href="#hoot-waving"/>
+          </svg>
+        </div>
+        <div class="hero-badge">🌍 Fungerar på alla språk</div>
+        <h1>Svara på varje recension<br>på sekunder</h1>
+        <p class="hero-subtitle">AI-drivna recensionssvar som låter som du. Spara timmar varje vecka och missa aldrig en kund igen.</p>
+        <div class="hero-cta">
+          <a href="mailto:fredrik.blixt96@gmail.com?subject=Jag%20vill%20testa%20Replix" class="btn btn-primary btn-lg">Kom igång — 99 kr/mån</a>
+          <a href="#demo" class="btn btn-secondary btn-lg">Se hur det fungerar</a>
+        </div>
+        <p class="hero-trust">✓ Avsluta när som helst · ✓ Inga bindningstider · ✓ Igång på 2 minuter</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Stats -->
+  <section class="stats">
+    <div class="container">
+      <div class="stats-grid">
+        <div>
+          <div class="stat-value">18%</div>
+          <div class="stat-label" data-en="More revenue from responding to reviews" data-sv="Mer omsättning från att svara på recensioner">More revenue from responding to reviews</div>
+        </div>
+        <div>
+          <div class="stat-value">95%</div>
+          <div class="stat-label" data-en="Of businesses never respond to reviews" data-sv="Av företag svarar aldrig på recensioner">Of businesses never respond to reviews</div>
+        </div>
+        <div>
+          <div class="stat-value">10s</div>
+          <div class="stat-label" data-en="Average time to respond with Replix" data-sv="Genomsnittlig tid att svara med Replix">Average time to respond with Replix</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section id="features" class="features">
+    <div class="container">
+      <div class="section-header">
+        <h2 data-en="Everything you need to<br>manage reviews" data-sv="Allt du behöver för att<br>hantera recensioner">Everything you need to<br>manage reviews</h2>
+        <p data-en="Stop losing customers to unanswered reviews" data-sv="Sluta förlora kunder på obesvarade recensioner">Stop losing customers to unanswered reviews</p>
+      </div>
+      <div class="features-grid">
+        <div class="feature">
+          <div class="feature-icon">✨</div>
+          <h3 data-en="AI-generated responses" data-sv="AI-genererade svar">AI-generated responses</h3>
+          <p data-en="Get perfectly crafted responses in your tone. Friendly, professional, or personal — you choose." data-sv="Få perfekt utformade svar i din ton. Vänlig, professionell eller personlig — du väljer.">Get perfectly crafted responses in your tone. Friendly, professional, or personal — you choose.</p>
+        </div>
+        <div class="feature">
+          <div class="feature-icon">🚀</div>
+          <h3 data-en="One-click publishing" data-sv="Publicera med ett klick">One-click publishing</h3>
+          <p data-en="Review, edit if needed, and publish directly to Google with a single click." data-sv="Granska, redigera vid behov och publicera direkt till Google med ett enda klick.">Review, edit if needed, and publish directly to Google with a single click.</p>
+        </div>
+        <div class="feature">
+          <div class="feature-icon">📱</div>
+          <h3 data-en="Instant notifications" data-sv="Direkta notifikationer">Instant notifications</h3>
+          <p data-en="Get SMS or email alerts the moment a new review comes in. Never miss a negative review again." data-sv="Få SMS eller e-postvarningar direkt när en ny recension kommer in. Missa aldrig en negativ recension.">Get SMS or email alerts the moment a new review comes in. Never miss a negative review again.</p>
+        </div>
+        <div class="feature">
+          <div class="feature-icon">🌍</div>
+          <h3 data-en="Any language" data-sv="Alla språk">Any language</h3>
+          <p data-en="Responses in perfect Swedish, English, German, French — or any language your customers speak." data-sv="Svar på perfekt svenska, engelska, tyska, franska — eller vilket språk dina kunder talar.">Responses in perfect Swedish, English, German, French — or any language your customers speak.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- How it works -->
+  <section id="demo" class="how-it-works">
+    <div class="container">
+      <div class="section-header">
+        <h2 data-en="How it works" data-sv="Så fungerar det">How it works</h2>
+        <p data-en="From new review to published response in under a minute" data-sv="Från ny recension till publicerat svar på under en minut">From new review to published response in under a minute</p>
+      </div>
+      <div class="steps">
+        <div class="step">
+          <div class="step-number">1</div>
+          <h3 data-en="Connect Google Business" data-sv="Anslut Google Business">Connect Google Business</h3>
+          <p data-en="Log in with your Google account. We sync your reviews automatically. Takes 30 seconds." data-sv="Logga in med ditt Google-konto. Vi synkar dina recensioner automatiskt. Tar 30 sekunder.">Log in with your Google account. We sync your reviews automatically. Takes 30 seconds.</p>
+        </div>
+        <div class="step-arrow">→</div>
+        <div class="step">
+          <div class="step-number">2</div>
+          <h3 data-en="New review? AI writes reply" data-sv="Ny recension? AI skriver svar">New review? AI writes reply</h3>
+          <p data-en="When a review comes in, Hoot instantly generates a personalized response in your tone." data-sv="När en recension kommer in skapar Hoot direkt ett personligt svar i din ton.">When a review comes in, Hoot instantly generates a personalized response in your tone.</p>
+        </div>
+        <div class="step-arrow">→</div>
+        <div class="step">
+          <div class="step-number">3</div>
+          <h3 data-en="One click to publish" data-sv="Ett klick för att publicera">One click to publish</h3>
+          <p data-en="Review, edit if you want, click publish. Done — response goes live on Google." data-sv="Granska, redigera om du vill, klicka publicera. Klart — svaret går live på Google.">Review, edit if you want, click publish. Done — response goes live on Google.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Testimonials -->
+  <section class="testimonials">
+    <div class="container">
+      <div class="section-header">
+        <h2 data-en="What our customers say" data-sv="Vad våra kunder säger">What our customers say</h2>
+      </div>
+      <div class="testimonials-grid">
+        <div class="testimonial">
+          <div class="testimonial-stars">★★★★★</div>
+          <blockquote data-en=""I used to spend 2 hours a week on reviews. Now it takes 10 minutes. The AI sounds just like me."" data-sv=""Jag brukade lägga 2 timmar i veckan på recensioner. Nu tar det 10 minuter. AI:n låter precis som jag."">"I used to spend 2 hours a week on reviews. Now it takes 10 minutes. The AI sounds just like me."</blockquote>
+          <div class="testimonial-author">
+            <div class="testimonial-avatar">MA</div>
+            <div>
+              <div class="testimonial-name">Mohammed A.</div>
+              <div class="testimonial-role" data-en="Owner, Haga Pizzeria" data-sv="Ägare, Haga Pizzeria">Owner, Haga Pizzeria</div>
+            </div>
+          </div>
+        </div>
+        <div class="testimonial">
+          <div class="testimonial-stars">★★★★★</div>
+          <blockquote data-en=""Our rating went from 4.2 to 4.6 in three months. Responding to every review makes a huge difference."" data-sv=""Vårt betyg gick från 4,2 till 4,6 på tre månader. Att svara på varje recension gör enorm skillnad."">"Our rating went from 4.2 to 4.6 in three months. Responding to every review makes a huge difference."</blockquote>
+          <div class="testimonial-author">
+            <div class="testimonial-avatar">LS</div>
+            <div>
+              <div class="testimonial-name">Lisa S.</div>
+              <div class="testimonial-role" data-en="Owner, Vi Hair Salon" data-sv="Ägare, Vi Umeå Frisör">Owner, Vi Hair Salon</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Why Respond Section -->
+  <section class="why-respond" style="padding: 80px 0; background: linear-gradient(180deg, #FEF3C7 0%, #FFFBEB 100%); border-top: 1px solid #FCD34D;">
+    <div class="container">
+      <div class="section-header">
+        <h2 data-en="Why responding to reviews matters" data-sv="Varför det lönar sig att svara på recensioner">Why responding to reviews matters</h2>
+        <p data-en="The numbers don't lie — responding to reviews directly impacts your bottom line" data-sv="Siffrorna ljuger inte — att svara på recensioner påverkar direkt din omsättning">The numbers don't lie — responding to reviews directly impacts your bottom line</p>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; margin-top: 48px;">
+        <div style="background: white; padding: 32px 24px; border-radius: 16px; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
+          <div style="font-size: 48px; font-weight: 700; color: #059669; margin-bottom: 8px;">18%</div>
+          <div style="font-size: 14px; color: #525252;" data-en="More revenue from responding" data-sv="Mer omsättning från att svara">More revenue from responding</div>
+          <div style="font-size: 12px; color: #737373; margin-top: 8px;">SOCi Research 2024</div>
+        </div>
+        <div style="background: white; padding: 32px 24px; border-radius: 16px; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
+          <div style="font-size: 48px; font-weight: 700; color: #DC2626; margin-bottom: 8px;">89%</div>
+          <div style="font-size: 14px; color: #525252;" data-en="Of customers expect a response" data-sv="Av kunder förväntar sig svar">Of customers expect a response</div>
+          <div style="font-size: 12px; color: #737373; margin-top: 8px;">Upfirst 2025</div>
+        </div>
+        <div style="background: white; padding: 32px 24px; border-radius: 16px; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
+          <div style="font-size: 48px; font-weight: 700; color: #7C3AED; margin-bottom: 8px;">56%</div>
+          <div style="font-size: 14px; color: #525252;" data-en="Changed opinion after owner replied" data-sv="Ändrade åsikt efter ägarsvar">Changed opinion after owner replied</div>
+          <div style="font-size: 12px; color: #737373; margin-top: 8px;">BrightLocal 2024</div>
+        </div>
+        <div style="background: white; padding: 32px 24px; border-radius: 16px; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
+          <div style="font-size: 48px; font-weight: 700; color: #2563EB; margin-bottom: 8px;">4.3→4.6</div>
+          <div style="font-size: 14px; color: #525252;" data-en="Average rating increase" data-sv="Genomsnittlig betygsökning">Average rating increase</div>
+          <div style="font-size: 12px; color: #737373; margin-top: 8px;" data-en="After 3 months of responding" data-sv="Efter 3 månaders svarande">After 3 months of responding</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Pricing -->
+  <section id="pricing" class="pricing">
+    <div class="container">
+      <div class="section-header">
+        <h2 data-en="Simple, transparent pricing" data-sv="Enkel, transparent prissättning">Simple, transparent pricing</h2>
+        <p data-en="Still 6x cheaper than Birdeye. No hidden fees. Cancel anytime." data-sv="Fortfarande 6x billigare än Birdeye. Inga dolda avgifter. Avsluta när som helst.">Still 6x cheaper than Birdeye. No hidden fees. Cancel anytime.</p>
+      </div>
+
+      <div class="pricing-grid">
+        <div class="plan">
+          <div class="plan-name">Starter</div>
+          <div class="plan-price"><span class="price-value">99 kr</span><span>/mån</span></div>
+          <div class="plan-desc" data-en="Perfect for single-location businesses" data-sv="Perfekt för företag med en plats">Perfect for single-location businesses</div>
+          <ul class="plan-features">
+            <li data-en="✓ Unlimited AI responses" data-sv="✓ Obegränsade AI-svar">✓ Unlimited AI responses</li>
+            <li data-en="✓ All languages supported" data-sv="✓ Alla språk stöds">✓ All languages supported</li>
+            <li data-en="✓ Email notifications" data-sv="✓ E-postnotifikationer">✓ Email notifications</li>
+            <li data-en="✓ Email support" data-sv="✓ E-postsupport">✓ Email support</li>
+          </ul>
+          <a href="/cdn-cgi/l/email-protection#1a7c687f7e68737134787673626e232c5a7d777b73763479757725696f78707f796e27533f282a6d7b746e3f282a487f6a7673623f282a496e7b686e7f683f282a32f898b62e23357775746e72333c78757e632752733b3f282a533f282d773f282a73746e7f687f696e7f7e3f282a73743f282a6e727f3f282a487f6a7673623f282a496e7b686e7f683f282a6a767b743f282a7b6e3f282af898b62e23357775746e72343f2a5b3f2a5b57633f282a786f6973747f6969203f2a5b5d75757d767f3f282a586f6973747f69693f282a4f4856203f2a5b3f2a5b4a767f7b697f3f282a7d7f6e3f282a73743f282a6e756f79723b" class="btn btn-secondary btn-block" data-en="Get started" data-sv="Kom igång">Get started</a>
+        </div>
+        <div class="plan plan-popular">
+          <div class="plan-badge" data-en="Most popular" data-sv="Mest populär">Most popular</div>
+          <div class="plan-name">Pro</div>
+          <div class="plan-price"><span class="price-value">199 kr</span><span>/mån</span></div>
+          <div class="plan-desc" data-en="For businesses that want more insights" data-sv="För företag som vill ha mer insikter">For businesses that want more insights</div>
+          <ul class="plan-features">
+            <li data-en="✓ Everything in Starter" data-sv="✓ Allt i Starter">✓ Everything in Starter</li>
+            <li data-en="✓ Weekly performance reports" data-sv="✓ Veckovisa rapporter">✓ Weekly performance reports</li>
+            <li data-en="✓ SMS + WhatsApp notifications" data-sv="✓ SMS + WhatsApp-notiser">✓ SMS + WhatsApp notifications</li>
+            <li data-en="✓ Negative review alerts (instant)" data-sv="✓ Negativa recensioner (direkt)">✓ Negative review alerts (instant)</li>
+            <li data-en="✓ Priority support" data-sv="✓ Prioriterad support">✓ Priority support</li>
+          </ul>
+          <a href="/cdn-cgi/l/email-protection#e482968180968d8fca86888d9c90ddd2a48389858d88ca878b89db9791868e818790d9adc1d6d493858a90c1d6d4b68194888d9cc1d6d4b4968bc1d6d4cc066648ddddcb898b8a908ccdc2868b809dd9ac8dc5c1d6d4adc1d6d389c1d6d48d8a9081968197908180c1d6d48d8ac1d6d4908c81c1d6d4b68194888d9cc1d6d4b4968bc1d6d49488858ac1d6d48590c1d6d4066648ddddcb898b8a908ccac1d4a5c1d4a5a99dc1d6d48691978d8a819797dec1d4a5a38b8b838881c1d6d4a691978d8a819797c1d6d4b1b6a8dec1d4a5c1d4a5b48881859781c1d6d4838190c1d6d48d8ac1d6d4908b91878cc5" class="btn btn-primary btn-block" data-en="Get started" data-sv="Kom igång">Get started</a>
+        </div>
+        <div class="plan">
+          <div class="plan-name">Managed</div>
+          <div class="plan-price"><span class="price-value">499 kr</span><span>/mån</span></div>
+          <div class="plan-desc" data-en="We handle everything for you" data-sv="Vi hanterar allt åt dig">We handle everything for you</div>
+          <ul class="plan-features">
+            <li data-en="✓ We respond for you (same day)" data-sv="✓ Vi svarar åt dig (samma dag)">✓ We respond for you (same day)</li>
+            <li data-en="✓ Dedicated account manager" data-sv="✓ Dedikerad kontoansvarig">✓ Dedicated account manager</li>
+            <li data-en="✓ Custom brand voice setup" data-sv="✓ Anpassad röst för ditt varumärke">✓ Custom brand voice setup</li>
+            <li data-en="✓ Monthly strategy calls" data-sv="✓ Månatliga strategisamtal">✓ Monthly strategy calls</li>
+            <li data-en="✓ Respond to old reviews (first 50 free)" data-sv="✓ Svar på gamla recensioner (50 gratis)">✓ Respond to old reviews (first 50 free)</li>
+          </ul>
+          <a href="/cdn-cgi/l/email-protection#adcbdfc8c9dfc4c683cfc1c4d5d9949bedcac0ccc4c183cec2c092ded8cfc7c8ced990e4889f9ddaccc3d9889f9dffc8ddc1c4d5889f9de0ccc3cccac8c9889f9d854f2f019c949482c0c2c3d9c5848bcfc2c9d490e5c48c889f9de4889f9ac0889f9dc4c3d9c8dfc8ded9c8c9889f9dc4c3889f9dd9c5c8889f9dffc8ddc1c4d5889f9de0ccc3cccac8c9889f9dddc1ccc3889f9dccd9889f9d4f2f019c949482c0c2c3d9c583889dec889dece0d4889f9dcfd8dec4c3c8dede97889deceac2c2cac1c8889f9defd8dec4c3c8dede889f9df8ffe197889dec889decfdc1c8ccdec8889f9dcac8d9889f9dc4c3889f9dd9c2d8cec58c" class="btn btn-secondary btn-block" data-en="Contact us" data-sv="Kontakta oss">Contact us</a>
+        </div>
+      </div>
+      <div style="text-align: center; margin-top: 32px; padding: 24px; background: #F5F5F5; border-radius: 12px;">
+        <div style="font-size: 14px; color: #525252;" data-en="Compare: Birdeye starts at €299/month. Podium starts at €399/month. Same AI, fraction of the price." data-sv="Jämför: Birdeye kostar från €299/mån. Podium från €399/mån. Samma AI, bråkdel av priset.">Compare: Birdeye starts at €299/month. Podium starts at €399/month. Same AI, fraction of the price.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Final CTA -->
+  <section class="final-cta">
+    <div class="container">
+      <svg viewBox="0 0 120 130" width="100" height="100" style="margin-bottom: 24px;">
+        <use href="#hoot-mascot"/>
+      </svg>
+      <h2 data-en="Ready to save hours every week?" data-sv="Redo att spara timmar varje vecka?">Ready to save hours every week?</h2>
+      <p data-en="Join thousands of businesses using Replix worldwide" data-sv="Gå med tusentals företag som använder Replix världen över">Join thousands of businesses using Replix worldwide</p>
+      <a href="/cdn-cgi/l/email-protection#6402160100160d0f4a06080d1c105d52240309050d084a070b095b1711060e010710592d41565413050a10415654100b41565410161d415654360114080d1c42060b001d592c0d454156542d415653094156540d0a10011601171001004156540d0a415654360114080d1c4a415425415425291d4156540611170d0a0117175e415425230b0b0308014156542611170d0a0117174156543136285e4154254154253408010517014156540301104156540d0a415654100b11070c45" class="btn btn-primary btn-lg" data-en="Get started today" data-sv="Kom igång idag">Get started today</a>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <div class="logo">
+            <svg viewBox="0 0 120 130" width="36" height="36">
+              <use href="#hoot-mascot"/>
+            </svg>
+            Replix
+          </div>
+          <p data-en="AI-powered review responses for local businesses worldwide. Save time, increase revenue, and build stronger customer relationships." data-sv="AI-drivna recensionssvar för lokala företag världen över. Spara tid, öka omsättningen och bygg starkare kundrelationer.">AI-powered review responses for local businesses worldwide. Save time, increase revenue, and build stronger customer relationships.</p>
+        </div>
+        <div class="footer-links">
+          <h4 data-en="Product" data-sv="Produkt">Product</h4>
+          <a href="#features" data-en="Features" data-sv="Funktioner">Features</a>
+          <a href="#pricing" data-en="Pricing" data-sv="Priser">Pricing</a>
+          <a href="/cdn-cgi/l/email-protection#91f7e3f4f5e3f8fabff3fdf8e9e5a8a7d1f6fcf0f8fdbff2fefcaee2e4f3fbf4f2e5acc3f4e1fdf8e9b4a3a1ddfef6f8ff" data-en="Log in" data-sv="Logga in">Log in</a>
+        </div>
+        <div class="footer-links">
+          <h4 data-en="Company" data-sv="Företag">Company</h4>
+          <a href="#" data-en="About" data-sv="Om oss">About</a>
+          <a href="/cdn-cgi/l/email-protection#701602151402191b5e121c190804494630171d11191c5e131f1d4f0305121a1513044d331f1e041113045542402215001c1908" data-en="Contact" data-sv="Kontakt">Contact</a>
+          <a href="#" data-en="Blog" data-sv="Blogg">Blog</a>
+        </div>
+        <div class="footer-links">
+          <h4 data-en="Legal" data-sv="Juridiskt">Legal</h4>
+          <a href="#" data-en="Privacy Policy" data-sv="Integritetspolicy">Privacy Policy</a>
+          <a href="#" data-en="Terms of Service" data-sv="Användarvillkor">Terms of Service</a>
+          <a href="#">GDPR</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>© 2026 Replix. <span data-en="All rights reserved." data-sv="Alla rättigheter förbehållna.">All rights reserved.</span></p>
+      </div>
+    </div>
+  </footer>
+
+  <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+    // Language switching
+    let currentLang = 'en';
+    
+    function setLanguage(lang) {
+      currentLang = lang;
+    
