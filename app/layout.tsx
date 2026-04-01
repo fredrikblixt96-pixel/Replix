@@ -3,7 +3,10 @@ import './globals.css'
 
 export const metadata: Metadata = {
   title: 'Replix — AI-drivna recensionssvar',
-  description: 'Svara på Google-recensioner på sekunder med AI.',
+  description: 'Svara på Google-recensioner på sekunder med AI. Spara timmar varje vecka.',
+  icons: {
+    icon: '/favicon.ico',
+  },
 }
 
 export default function RootLayout({
